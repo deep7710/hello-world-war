@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world-deployment
+  labels:
+    service: hello-world
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      service: hello-world
+  template:
+    metadata:
+      labels:
+        service: hello-world
+    spec:
+      containers:
+      - name: hello-world
+        image: test-docker-repo.example.com:5000/hello-world:v1.jenkins-hello-world-2
+        imagePullPolicy: Always
+        env:
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - mountPath: "/alogs"
+          name: hello-world-dir
+      imagePullSecrets:
+      - name: dockerlogin
+      volumes:
+      - name: hello-world-dir
+        hostPath:
+          path: "/alogs"
+          type: Directory
