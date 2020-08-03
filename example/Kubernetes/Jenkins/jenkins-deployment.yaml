@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  labels:
+    service: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: jenkins
+  template:
+    metadata:
+      labels:
+        service: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: test-docker-repo.example.com:5000/jenkins:v1
+        imagePullPolicy: Always
+        env:
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - mountPath: "/opt/jenkins-data"
+          name: jenkins-data-storage
+        - mountPath: "/var/run/docker.sock"
+          name: jenkins-docker-sock
+      imagePullSecrets:
+      - name: dockerlogin
+      nodeSelector:
+        kubernetes.io/hostname: k8s-worker-1
+      volumes:
+      - name: jenkins-data-storage
+        persistentVolumeClaim:
+          claimName: jenkins-data-pvc
+      - name: jenkins-docker-sock
+        hostPath:
+          path: "/var/run/docker.sock"
+          type: Socket
