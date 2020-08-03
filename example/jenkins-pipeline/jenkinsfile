@@ -1,0 +1,53 @@
+pipeline {
+agent any
+tools{
+    jdk "jdk8u221"
+    maven "mvn3.6.3"
+}
+
+stages {
+ stage('Checkout hello world code') {
+        steps {
+            git branch: "$Branch",
+                url: 'https://github.com/deep7710/hello-world-war.git'
+
+            sh "ls -lat"
+        }
+    }
+  stage('Build'){
+      steps{
+          
+              sh "mvn clean install"
+          
+      }
+  }
+  stage('move artifact'){
+     steps{
+      sh "cp -r /var/jenkins_home/workspace/hello-world/target/hello-world-war-1.0.0.war /var/jenkins_home/workspace/hello-world/"
+      
+  }
+  }
+  stage('Docker build'){
+      steps{
+          script{
+         
+          test = docker.build("test-docker-repo.example.com:5000/hello-world:v1.${env.BUILD_NUMBER}")
+      }
+      }
+  }
+  stage('Push image to private registry'){
+      steps{
+        script{
+         docker.withRegistry('http://test-docker-repo.example.com:5000/', 'docker-login') {
+              test.push()
+            }
+            }          
+      }
+   }
+  stage('Deployment'){
+        steps{
+            sh "ssh root@x.x.x.x 'kubectl set image -f /root/hello-world/hello-deployment.yaml hello-world=test-docker-repo.example.com:5000/hello-world:v1.${env.BUILD_NUMBER} --all'"
+        }
+    }
+  }  
+}    
