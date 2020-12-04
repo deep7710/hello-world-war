@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: hello-world
-        image: 424503791295.dkr.ecr.ap-south-1.amazonaws.com/wallet-qa-ecr:hello_world_v1.10
+        image: .dkr.ecr.ap-south-1.amazonaws.com/qa-ecr:hello_world_v1.10
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
